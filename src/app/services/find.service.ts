@@ -2,9 +2,7 @@ import { Injectable, signal, computed } from '@angular/core';
 import {
   DetectorFind,
   FindCategory,
-  FindMaterial,
   CATEGORY_LABELS,
-  MATERIAL_LABELS,
 } from '../models/find.model';
 
 const STORAGE_KEY = 'metaldetecting_finds';
@@ -53,20 +51,6 @@ export class FindService {
       .map(([key, value]) => ({
         category: key as FindCategory,
         label: CATEGORY_LABELS[key as FindCategory],
-        count: value!,
-      }))
-      .sort((a, b) => b.count - a.count);
-  });
-
-  readonly materialBreakdown = computed(() => {
-    const counts: Partial<Record<FindMaterial, number>> = {};
-    for (const f of this.findsSignal()) {
-      counts[f.material] = (counts[f.material] || 0) + 1;
-    }
-    return Object.entries(counts)
-      .map(([key, value]) => ({
-        material: key as FindMaterial,
-        label: MATERIAL_LABELS[key as FindMaterial],
         count: value!,
       }))
       .sort((a, b) => b.count - a.count);

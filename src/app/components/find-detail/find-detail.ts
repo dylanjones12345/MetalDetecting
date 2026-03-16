@@ -2,12 +2,14 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { FindService } from '../../services/find.service';
+import { AuthService } from '../../services/auth.service';
 import {
   DetectorFind,
   CATEGORY_LABELS,
   CATEGORY_ICONS,
-  MATERIAL_LABELS,
+  CATEGORY_XP,
   CONDITION_LABELS,
+  FindCategory,
 } from '../../models/find.model';
 
 @Component({
@@ -19,10 +21,12 @@ import {
       <div class="detail-page">
         <div class="detail-nav">
           <a routerLink="/finds" class="back-link">← Back to Finds</a>
-          <div class="detail-actions">
-            <a [routerLink]="['/edit', f.id]" class="btn-edit">✏️ Edit</a>
-            <button class="btn-delete" (click)="onDelete()">🗑️ Drop</button>
-          </div>
+          @if (auth.isAdmin()) {
+            <div class="detail-actions">
+              <a [routerLink]="['/edit', f.id]" class="btn-edit">✏️ Edit</a>
+              <button class="btn-delete" (click)="onDelete()">🗑️ Drop</button>
+            </div>
+          }
         </div>
 
         <div class="detail-hero">
@@ -41,6 +45,7 @@ import {
               @if (f.location) {
                 <span class="meta-chip osrs-panel">📍 {{ f.location }}</span>
               }
+              <span class="meta-chip xp-chip">+{{ getXp(f) }} xp</span>
             </div>
           </div>
         </div>
@@ -49,10 +54,6 @@ import {
           <div class="detail-card osrs-panel">
             <h3>💰 Value</h3>
             <span class="detail-big-value gold">{{ f.estimatedValue | currency }}</span>
-          </div>
-          <div class="detail-card osrs-panel">
-            <h3>🏷️ Material</h3>
-            <span class="detail-big-value">{{ getMaterial(f) }}</span>
           </div>
           <div class="detail-card osrs-panel">
             <h3>📏 Depth</h3>
@@ -80,7 +81,7 @@ import {
     } @else {
       <div class="not-found osrs-panel" style="max-width:500px;margin:2rem auto;padding:2rem;text-align:center;">
         <h2>Find not found!</h2>
-        <p style="margin:0.5rem 0 1rem;">This treasure seems to have vanished...</p>
+        <p style="margin:0.5rem 0 1rem;color:var(--text-muted)">This treasure seems to have vanished...</p>
         <a routerLink="/finds" style="color:var(--gold-dark);">← Back to Finds</a>
       </div>
     }
@@ -88,8 +89,7 @@ import {
   styles: `
     .detail-page { max-width: 900px; margin: 0 auto; padding: 1.5rem; }
     .detail-nav {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 1.25rem;
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;
     }
     .back-link {
       color: var(--text-light); text-decoration: none; font-size: 0.95rem;
@@ -98,9 +98,8 @@ import {
     .back-link:hover { color: var(--gold); }
     .detail-actions { display: flex; gap: 0.4rem; }
     .btn-edit, .btn-delete {
-      padding: 0.4rem 0.85rem; font-weight: 600;
-      font-size: 0.9rem; cursor: pointer; font-family: inherit;
-      transition: filter 0.15s;
+      padding: 0.4rem 0.85rem; font-weight: 600; font-size: 0.9rem;
+      cursor: pointer; font-family: inherit; transition: filter 0.15s;
     }
     .btn-edit {
       background: linear-gradient(180deg, var(--surface-light), var(--surface-dark));
@@ -110,48 +109,40 @@ import {
     }
     .btn-edit:hover { filter: brightness(1.05); }
     .btn-delete {
-      background: linear-gradient(180deg, #e74c3c, #c0392b);
-      color: #fff;
+      background: linear-gradient(180deg, #e74c3c, #c0392b); color: #fff;
       border: 2px solid #7a1a1a; border-top-color: #ff6b6b; border-left-color: #ff6b6b;
-      box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
-      text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+      box-shadow: 2px 2px 0 rgba(0,0,0,0.3); text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
     }
     .btn-delete:hover { filter: brightness(1.1); }
 
-    .detail-hero {
-      display: flex; gap: 1.5rem; align-items: flex-start;
-      margin-bottom: 1.5rem;
-    }
+    .detail-hero { display: flex; gap: 1.5rem; align-items: flex-start; margin-bottom: 1.5rem; }
     .hero-image {
       width: 200px; height: 200px; flex-shrink: 0;
-      background-size: cover; background-position: center;
-      padding: 0 !important;
+      background-size: cover; background-position: center; padding: 0 !important;
     }
     .hero-image.placeholder {
-      display: flex; align-items: center; justify-content: center;
-      font-size: 4.5rem;
+      display: flex; align-items: center; justify-content: center; font-size: 4.5rem;
       background: linear-gradient(180deg, var(--surface-light), var(--surface-dark)) !important;
     }
     .hero-info { flex: 1; }
     .detail-category {
       font-size: 0.85rem; font-weight: 600; text-transform: uppercase;
-      color: var(--gold); letter-spacing: 0.5px;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+      color: var(--gold); letter-spacing: 0.5px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     }
     .hero-info h1 {
       font-size: 1.8rem; margin: 0.2rem 0 0.65rem;
-      color: var(--text-light);
-      text-shadow: 2px 2px 3px rgba(0,0,0,0.5);
+      color: var(--text-light); text-shadow: 2px 2px 3px rgba(0,0,0,0.5);
     }
     .hero-meta { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-    .meta-chip {
-      padding: 0.3rem 0.65rem !important;
-      font-size: 0.9rem; color: var(--text);
+    .meta-chip { padding: 0.3rem 0.65rem !important; font-size: 0.9rem; color: var(--text); }
+    .xp-chip {
+      background: linear-gradient(180deg, #3a3a2a, #2a2a1a);
+      border: 2px solid #555540; color: #00ff00; font-weight: 700;
+      padding: 0.3rem 0.65rem;
     }
 
     .detail-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       gap: 0.75rem; margin-bottom: 1.5rem;
     }
     .detail-card { padding: 1rem; text-align: center; }
@@ -164,8 +155,10 @@ import {
     .condition[data-condition="poor"] { color: #922b21; }
 
     .notes-section { padding: 1.25rem; }
-    .notes-section h3 { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 0.6rem;
-      border-bottom: 2px solid var(--border-light); padding-bottom: 0.3rem; }
+    .notes-section h3 {
+      font-size: 0.95rem; color: var(--text-muted); margin-bottom: 0.6rem;
+      border-bottom: 2px solid var(--border-light); padding-bottom: 0.3rem;
+    }
     .notes-section p { line-height: 1.6; color: var(--text); white-space: pre-wrap; }
 
     @media (max-width: 600px) {
@@ -177,6 +170,7 @@ import {
 })
 export class FindDetailComponent implements OnInit {
   private findService = inject(FindService);
+  protected auth = inject(AuthService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
@@ -199,6 +193,6 @@ export class FindDetailComponent implements OnInit {
 
   getIcon(f: DetectorFind) { return CATEGORY_ICONS[f.category] ?? '❓'; }
   getCategory(f: DetectorFind) { return CATEGORY_LABELS[f.category] ?? f.category; }
-  getMaterial(f: DetectorFind) { return MATERIAL_LABELS[f.material] ?? f.material; }
   getCondition(f: DetectorFind) { return CONDITION_LABELS[f.condition] ?? f.condition; }
+  getXp(f: DetectorFind) { return CATEGORY_XP[f.category] ?? 0; }
 }

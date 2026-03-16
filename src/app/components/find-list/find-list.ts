@@ -3,11 +3,12 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { FindService } from '../../services/find.service';
+import { AuthService } from '../../services/auth.service';
 import {
   FindCategory,
   CATEGORY_LABELS,
   CATEGORY_ICONS,
-  MATERIAL_LABELS,
+  CATEGORY_XP,
   CONDITION_LABELS,
 } from '../../models/find.model';
 
@@ -22,7 +23,9 @@ import {
           <h1 class="osrs-heading">🎒 My Finds</h1>
           <p>{{ findService.totalFinds() }} items in your collection</p>
         </div>
-        <a routerLink="/add" class="btn-primary">⚔️ Log Find</a>
+        @if (auth.isAdmin()) {
+          <a routerLink="/add" class="btn-primary">⚔️ Log Find</a>
+        }
       </div>
 
       <div class="filters osrs-panel">
@@ -61,14 +64,14 @@ import {
               <div class="card-body">
                 <div class="card-top">
                   <span class="card-category">{{ getCategoryLabel(find.category) }}</span>
-                  <span class="card-condition" [attr.data-condition]="find.condition">
-                    {{ getConditionLabel(find.condition) }}
-                  </span>
+                  <span class="card-xp">+{{ getCategoryXp(find.category) }} xp</span>
                 </div>
                 <h3 class="card-name">{{ find.name }}</h3>
                 <div class="card-meta">
                   <span>{{ find.dateFound | date:'mediumDate' }}</span>
-                  <span>{{ getMaterialLabel(find.material) }}</span>
+                  <span class="card-condition" [attr.data-condition]="find.condition">
+                    {{ getConditionLabel(find.condition) }}
+                  </span>
                 </div>
                 <div class="card-bottom">
                   <span class="card-value">{{ find.estimatedValue | currency }}</span>
@@ -98,50 +101,36 @@ import {
       border: 2px solid #1a5c1a; border-top-color: #6fcf6f; border-left-color: #6fcf6f;
       text-decoration: none; font-weight: 600; font-family: inherit; font-size: 1rem;
       box-shadow: 2px 2px 0 rgba(0,0,0,0.3); text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
-      transition: filter 0.15s;
     }
     .btn-primary:hover { filter: brightness(1.1); }
 
-    .filters {
-      display: flex; gap: 0.6rem; margin-bottom: 1rem; flex-wrap: wrap; padding: 0.75rem;
-    }
+    .filters { display: flex; gap: 0.6rem; margin-bottom: 1rem; flex-wrap: wrap; padding: 0.75rem; }
     .search-input { flex: 1; min-width: 180px; }
     .filters input, .filters select {
       background: var(--surface-light);
-      border: 2px solid var(--border);
-      border-bottom-color: var(--border-light); border-right-color: var(--border-light);
+      border: 2px solid var(--border); border-bottom-color: var(--border-light); border-right-color: var(--border-light);
       color: var(--text); padding: 0.45rem 0.7rem; font-size: 0.95rem; font-family: inherit;
       box-shadow: inset 1px 1px 2px rgba(0,0,0,0.15);
     }
     .filters input:focus, .filters select:focus { outline: none; border-color: var(--gold-dark); }
 
-    .empty {
-      text-align: center; padding: 2.5rem; color: var(--text-muted);
-    }
+    .empty { text-align: center; padding: 2.5rem; color: var(--text-muted); }
 
     .finds-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-      gap: 0.85rem;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 0.85rem;
     }
     .find-card {
-      overflow: hidden;
-      text-decoration: none;
-      color: var(--text);
-      transition: transform 0.15s;
-      padding: 0 !important;
+      overflow: hidden; text-decoration: none; color: var(--text);
+      transition: transform 0.15s; padding: 0 !important;
     }
     .find-card:hover { transform: translateY(-3px); }
 
     .card-image {
-      height: 150px;
-      background-size: cover; background-position: center;
-      background-color: var(--surface-dark);
-      border-bottom: 2px solid var(--border);
+      height: 150px; background-size: cover; background-position: center;
+      background-color: var(--surface-dark); border-bottom: 2px solid var(--border);
     }
     .card-image.placeholder {
-      display: flex; align-items: center; justify-content: center;
-      font-size: 2.75rem;
+      display: flex; align-items: center; justify-content: center; font-size: 2.75rem;
       background: linear-gradient(135deg, var(--surface-dark), var(--surface));
     }
 
@@ -151,10 +140,12 @@ import {
       font-size: 0.8rem; font-weight: 600; text-transform: uppercase;
       color: var(--gold-dark); letter-spacing: 0.5px;
     }
+    .card-xp {
+      font-size: 0.75rem; font-weight: 700; color: #00cc00;
+      background: rgba(0,0,0,0.15); padding: 0.1rem 0.4rem; border: 1px solid rgba(0,200,0,0.2);
+    }
     .card-condition {
-      font-size: 0.75rem; padding: 0.1rem 0.45rem;
-      border: 1px solid var(--border-light);
-      font-weight: 600;
+      font-size: 0.75rem; padding: 0.1rem 0.4rem; border: 1px solid var(--border-light); font-weight: 600;
     }
     .card-condition[data-condition="excellent"] { background: rgba(0,180,0,0.15); color: #1a7a1a; }
     .card-condition[data-condition="good"] { background: rgba(41,128,185,0.15); color: #1a5276; }
@@ -165,15 +156,9 @@ import {
       font-size: 1.05rem; font-weight: 600; margin-bottom: 0.4rem;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .card-meta {
-      display: flex; gap: 0.6rem;
-      font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.6rem;
-    }
+    .card-meta { display: flex; gap: 0.6rem; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.6rem; }
     .card-bottom { display: flex; justify-content: space-between; align-items: center; }
-    .card-value {
-      font-weight: 700; color: var(--gold-dark); font-size: 1.05rem;
-      text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
-    }
+    .card-value { font-weight: 700; color: var(--gold-dark); font-size: 1.05rem; }
     .card-depth { font-size: 0.8rem; color: var(--text-muted); }
 
     @media (max-width: 600px) {
@@ -184,11 +169,11 @@ import {
 })
 export class FindListComponent {
   protected readonly findService = inject(FindService);
+  protected readonly auth = inject(AuthService);
 
   searchQuery = '';
   categoryFilter = '';
   sortBy = 'date-desc';
-
   private filterTrigger = signal(0);
 
   categoryOptions = Object.entries(CATEGORY_LABELS).map(([value, label]) => ({ value, label }));
@@ -196,20 +181,13 @@ export class FindListComponent {
   filteredFinds = computed(() => {
     this.filterTrigger();
     let items = [...this.findService.finds()];
-
     if (this.searchQuery) {
       const q = this.searchQuery.toLowerCase();
-      items = items.filter(
-        (f) =>
-          f.name.toLowerCase().includes(q) ||
-          f.location.toLowerCase().includes(q) ||
-          f.notes.toLowerCase().includes(q)
-      );
+      items = items.filter((f) => f.name.toLowerCase().includes(q) || f.location.toLowerCase().includes(q) || f.notes.toLowerCase().includes(q));
     }
     if (this.categoryFilter) {
       items = items.filter((f) => f.category === this.categoryFilter);
     }
-
     switch (this.sortBy) {
       case 'date-desc': items.sort((a, b) => b.dateFound.localeCompare(a.dateFound)); break;
       case 'date-asc': items.sort((a, b) => a.dateFound.localeCompare(b.dateFound)); break;
@@ -220,12 +198,10 @@ export class FindListComponent {
     return items;
   });
 
-  onFilterChange() {
-    this.filterTrigger.update((v) => v + 1);
-  }
+  onFilterChange() { this.filterTrigger.update((v) => v + 1); }
 
   getCategoryIcon(cat: FindCategory) { return CATEGORY_ICONS[cat] ?? '❓'; }
   getCategoryLabel(cat: string) { return CATEGORY_LABELS[cat as FindCategory] ?? cat; }
-  getMaterialLabel(mat: string) { return (MATERIAL_LABELS as Record<string, string>)[mat] ?? mat; }
+  getCategoryXp(cat: string) { return CATEGORY_XP[cat as FindCategory] ?? 0; }
   getConditionLabel(cond: string) { return (CONDITION_LABELS as Record<string, string>)[cond] ?? cond; }
 }
