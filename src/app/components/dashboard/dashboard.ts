@@ -30,11 +30,12 @@ const CHART_COLORS = [
       <!-- OSRS Skill Panel -->
       <div class="skill-panel osrs-panel">
         <div class="skill-header">
-          <span class="skill-icon">⛏️</span>
+          <img src="img/spade.png" class="skill-icon-img" alt="Metal Detecting" />
           <div class="skill-title">
             <h2 class="osrs-heading">Metal Detecting</h2>
             <span class="skill-subtitle">Level {{ xp.currentLevel() }}</span>
           </div>
+          <img src="img/king-sand-crab.png" class="skill-crab" alt="" />
         </div>
         <div class="xp-bar-container">
           <div class="xp-bar-bg">
@@ -105,7 +106,7 @@ const CHART_COLORS = [
 
       @if (findService.totalFinds() === 0) {
         <div class="empty-state osrs-panel">
-          <span class="empty-icon">⛏️</span>
+          <img src="img/bucket-of-sand.png" class="empty-img" alt="" />
           <h2>No finds logged yet!</h2>
           <p>Grab your detector and start digging, adventurer!</p>
           @if (auth.isAdmin()) {
@@ -184,7 +185,8 @@ const CHART_COLORS = [
       border-color: #5a5a3a !important;
     }
     .skill-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.85rem; }
-    .skill-icon { font-size: 2.5rem; }
+    .skill-icon-img { width: 48px; height: 48px; image-rendering: pixelated; }
+    .skill-crab { width: 56px; height: 56px; image-rendering: pixelated; margin-left: auto; opacity: 0.8; }
     .skill-title h2 { font-size: 0.65rem; margin-bottom: 0.2rem; }
     .skill-subtitle {
       font-size: 1.1rem; color: var(--text-light);
@@ -246,7 +248,7 @@ const CHART_COLORS = [
     .stat-label { font-size: 0.85rem; color: var(--text-muted); }
 
     .empty-state { text-align: center; padding: 3rem 2rem; }
-    .empty-icon { font-size: 3.5rem; display: block; margin-bottom: 0.75rem; }
+    .empty-img { width: 64px; height: 64px; image-rendering: pixelated; margin-bottom: 0.75rem; }
     .empty-state h2 { color: var(--text); margin-bottom: 0.4rem; font-size: 1.3rem; }
     .empty-state p { color: var(--text-muted); margin-bottom: 1.25rem; }
     .btn-primary {
