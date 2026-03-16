@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { BaseChartDirective } from 'ng2-charts';
 import { Chart, registerables, ChartConfiguration } from 'chart.js';
@@ -6,7 +6,6 @@ import { FindService } from '../../services/find.service';
 import {
   CATEGORY_ICONS,
   CATEGORY_LABELS,
-  MATERIAL_LABELS,
   FindCategory,
 } from '../../models/find.model';
 import { CurrencyPipe, DecimalPipe, DatePipe } from '@angular/common';
@@ -14,7 +13,7 @@ import { CurrencyPipe, DecimalPipe, DatePipe } from '@angular/common';
 Chart.register(...registerables);
 
 const CHART_COLORS = [
-  '#d4a017', '#c0392b', '#2980b9', '#27ae60', '#8e44ad',
+  '#daa520', '#c0392b', '#2980b9', '#27ae60', '#8e44ad',
   '#e67e22', '#1abc9c', '#e74c3c', '#3498db', '#f39c12',
   '#9b59b6', '#2ecc71',
 ];
@@ -26,33 +25,33 @@ const CHART_COLORS = [
   template: `
     <div class="dashboard">
       <div class="hero">
-        <h1>Your Detecting Stats</h1>
-        <p>Track every find, watch your collection grow.</p>
+        <h1 class="osrs-heading">🌴 Your Detecting Stats 🐚</h1>
+        <p class="hero-sub">Track every find, watch your treasure pile grow.</p>
       </div>
 
       <div class="stats-grid">
-        <div class="stat-card">
+        <div class="stat-card osrs-panel">
           <span class="stat-icon">🎯</span>
           <div class="stat-info">
             <span class="stat-value">{{ findService.totalFinds() }}</span>
             <span class="stat-label">Total Finds</span>
           </div>
         </div>
-        <div class="stat-card gold">
+        <div class="stat-card osrs-panel gold-card">
           <span class="stat-icon">💰</span>
           <div class="stat-info">
-            <span class="stat-value">{{ findService.totalValue() | currency }}</span>
+            <span class="stat-value gp-text">{{ findService.totalValue() | currency }}</span>
             <span class="stat-label">Total Value</span>
           </div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card osrs-panel">
           <span class="stat-icon">📏</span>
           <div class="stat-info">
             <span class="stat-value">{{ findService.averageDepth() | number:'1.1-1' }}"</span>
             <span class="stat-label">Avg Depth</span>
           </div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card osrs-panel">
           <span class="stat-icon">🏆</span>
           <div class="stat-info">
             @if (findService.bestFind(); as best) {
@@ -67,16 +66,16 @@ const CHART_COLORS = [
       </div>
 
       @if (findService.totalFinds() === 0) {
-        <div class="empty-state">
+        <div class="empty-state osrs-panel">
           <span class="empty-icon">⛏️</span>
-          <h2>No finds logged yet</h2>
-          <p>Head out with your detector and log your first discovery!</p>
-          <a routerLink="/add" class="btn-primary">+ Log Your First Find</a>
+          <h2>No finds logged yet!</h2>
+          <p>Grab your detector and start digging, adventurer!</p>
+          <a routerLink="/add" class="btn-primary">⚔️ Log Your First Find</a>
         </div>
       } @else {
         <div class="charts-grid">
-          <div class="chart-card">
-            <h3>Finds by Category</h3>
+          <div class="chart-card osrs-panel">
+            <h3>📊 Finds by Category</h3>
             <div class="chart-wrapper">
               <canvas baseChart
                 [datasets]="categoryChartData().datasets"
@@ -86,8 +85,8 @@ const CHART_COLORS = [
               </canvas>
             </div>
           </div>
-          <div class="chart-card">
-            <h3>Finds by Material</h3>
+          <div class="chart-card osrs-panel">
+            <h3>⚗️ Finds by Material</h3>
             <div class="chart-wrapper">
               <canvas baseChart
                 [datasets]="materialChartData().datasets"
@@ -97,8 +96,8 @@ const CHART_COLORS = [
               </canvas>
             </div>
           </div>
-          <div class="chart-card wide">
-            <h3>Finds Over Time</h3>
+          <div class="chart-card osrs-panel wide">
+            <h3>📈 Finds Over Time</h3>
             <div class="chart-wrapper line">
               <canvas baseChart
                 [datasets]="timelineChartData().datasets"
@@ -108,8 +107,8 @@ const CHART_COLORS = [
               </canvas>
             </div>
           </div>
-          <div class="chart-card wide">
-            <h3>Value by Category</h3>
+          <div class="chart-card osrs-panel wide">
+            <h3>💎 Value by Category</h3>
             <div class="chart-wrapper line">
               <canvas baseChart
                 [datasets]="valueByCategoryData().datasets"
@@ -123,12 +122,12 @@ const CHART_COLORS = [
 
         <div class="recent-section">
           <div class="section-header">
-            <h3>Recent Finds</h3>
+            <h3 class="osrs-heading" style="font-size:0.6rem">🦀 Recent Finds</h3>
             <a routerLink="/finds" class="view-all">View all →</a>
           </div>
           <div class="recent-grid">
             @for (find of findService.recentFinds(); track find.id) {
-              <a [routerLink]="['/finds', find.id]" class="recent-card">
+              <a [routerLink]="['/finds', find.id]" class="recent-card osrs-panel">
                 <span class="recent-icon">{{ getCategoryIcon(find.category) }}</span>
                 <div class="recent-info">
                   <span class="recent-name">{{ find.name }}</span>
@@ -145,117 +144,124 @@ const CHART_COLORS = [
     </div>
   `,
   styles: `
-    .dashboard { max-width: 1200px; margin: 0 auto; padding: 2rem; }
-    .hero { margin-bottom: 2rem; }
-    .hero h1 {
-      font-size: 2rem;
-      background: linear-gradient(135deg, var(--gold), var(--gold-light));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .hero p { color: var(--text-muted); margin-top: 0.25rem; }
+    .dashboard { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+
+    .hero { margin-bottom: 1.5rem; text-align: center; }
+    .hero h1 { font-size: 0.85rem; margin-bottom: 0.5rem; }
+    .hero-sub { color: var(--text-muted); font-size: 1.1rem; }
 
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
+      gap: 0.85rem;
+      margin-bottom: 1.5rem;
     }
     .stat-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.25rem;
+      padding: 1rem;
       display: flex;
       align-items: center;
-      gap: 1rem;
-      transition: transform 0.2s, box-shadow 0.2s;
+      gap: 0.85rem;
+      transition: transform 0.15s;
     }
-    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
-    .stat-card.gold { border-color: var(--gold-dark); }
-    .stat-icon { font-size: 2rem; }
+    .stat-card:hover { transform: translateY(-2px); }
+    .gold-card { border-color: var(--gold-dark) !important; }
+    .stat-icon { font-size: 1.75rem; }
     .stat-info { display: flex; flex-direction: column; min-width: 0; }
     .stat-value {
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       font-weight: 700;
       color: var(--text);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .stat-label { font-size: 0.8rem; color: var(--text-muted); }
+    .gp-text {
+      color: var(--gold-dark);
+      text-shadow: 1px 1px 0 rgba(0,0,0,0.15);
+    }
+    .stat-label { font-size: 0.85rem; color: var(--text-muted); }
 
     .empty-state {
       text-align: center;
-      padding: 4rem 2rem;
-      background: var(--surface);
-      border: 1px dashed var(--border);
-      border-radius: 16px;
+      padding: 3rem 2rem;
     }
-    .empty-icon { font-size: 4rem; display: block; margin-bottom: 1rem; }
-    .empty-state h2 { margin-bottom: 0.5rem; }
-    .empty-state p { color: var(--text-muted); margin-bottom: 1.5rem; }
+    .empty-icon { font-size: 3.5rem; display: block; margin-bottom: 0.75rem; }
+    .empty-state h2 { color: var(--text); margin-bottom: 0.4rem; font-size: 1.3rem; }
+    .empty-state p { color: var(--text-muted); margin-bottom: 1.25rem; }
     .btn-primary {
       display: inline-block;
-      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-      color: var(--bg);
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
+      background: linear-gradient(180deg, #4caf50 0%, #2d8c3e 100%);
+      color: var(--text-light);
+      padding: 0.6rem 1.5rem;
+      border: 2px solid #1a5c1a;
+      border-top-color: #6fcf6f;
+      border-left-color: #6fcf6f;
       text-decoration: none;
       font-weight: 600;
-      transition: opacity 0.2s;
+      font-family: inherit;
+      font-size: 1rem;
+      box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+      text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+      cursor: pointer;
+      transition: filter 0.15s;
     }
-    .btn-primary:hover { opacity: 0.9; }
+    .btn-primary:hover { filter: brightness(1.1); }
 
     .charts-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 1.25rem;
-      margin-bottom: 2rem;
+      gap: 0.85rem;
+      margin-bottom: 1.5rem;
     }
-    .chart-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.25rem;
-    }
+    .chart-card { padding: 1rem; }
     .chart-card.wide { grid-column: span 2; }
-    .chart-card h3 { font-size: 1rem; margin-bottom: 1rem; color: var(--text-muted); }
+    .chart-card h3 {
+      font-size: 1rem; margin-bottom: 0.75rem;
+      color: var(--text);
+      border-bottom: 2px solid var(--border-light);
+      padding-bottom: 0.4rem;
+    }
     .chart-wrapper { position: relative; height: 250px; }
     .chart-wrapper.line { height: 200px; }
 
-    .recent-section { margin-top: 1rem; }
+    .recent-section { margin-top: 0.75rem; }
     .section-header {
       display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 1rem;
+      margin-bottom: 0.75rem;
     }
-    .section-header h3 { font-size: 1.1rem; }
-    .view-all { color: var(--gold); text-decoration: none; font-size: 0.9rem; }
+    .view-all {
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.95rem;
+      padding: 0.25rem 0.6rem;
+      border: 2px solid var(--border-light);
+      background: var(--surface);
+      transition: background 0.15s;
+    }
+    .view-all:hover { background: var(--surface-hover); }
 
     .recent-grid { display: flex; flex-direction: column; gap: 0.5rem; }
     .recent-card {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1rem 1.25rem;
+      gap: 0.85rem;
+      padding: 0.75rem 1rem;
       text-decoration: none;
       color: var(--text);
-      transition: border-color 0.2s, transform 0.2s;
+      transition: transform 0.15s;
     }
-    .recent-card:hover { border-color: var(--gold-dark); transform: translateX(4px); }
-    .recent-icon { font-size: 1.5rem; }
+    .recent-card:hover { transform: translateX(3px); }
+    .recent-icon { font-size: 1.3rem; }
     .recent-info { flex: 1; display: flex; flex-direction: column; min-width: 0; }
     .recent-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .recent-meta { font-size: 0.8rem; color: var(--text-muted); }
-    .recent-value { font-weight: 700; color: var(--gold); white-space: nowrap; }
+    .recent-meta { font-size: 0.85rem; color: var(--text-muted); }
+    .recent-value { font-weight: 700; color: var(--gold-dark); white-space: nowrap; text-shadow: 1px 1px 0 rgba(0,0,0,0.1); }
 
     @media (max-width: 768px) {
       .dashboard { padding: 1rem; }
       .charts-grid { grid-template-columns: 1fr; }
       .chart-card.wide { grid-column: span 1; }
-      .hero h1 { font-size: 1.5rem; }
+      .hero h1 { font-size: 0.65rem; }
     }
   `,
 })
@@ -266,7 +272,7 @@ export class DashboardComponent {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: 'right', labels: { color: '#a0a0a0', padding: 12, font: { size: 12 } } },
+      legend: { position: 'right', labels: { color: '#2c1810', padding: 12, font: { size: 13, family: 'VT323' } } },
     },
   };
 
@@ -274,8 +280,8 @@ export class DashboardComponent {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
-      x: { ticks: { color: '#666' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-      y: { beginAtZero: true, ticks: { color: '#666', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+      x: { ticks: { color: '#5e4025', font: { family: 'VT323' } }, grid: { color: 'rgba(74,42,10,0.15)' } },
+      y: { beginAtZero: true, ticks: { color: '#5e4025', stepSize: 1, font: { family: 'VT323' } }, grid: { color: 'rgba(74,42,10,0.15)' } },
     },
     plugins: { legend: { display: false } },
   };
@@ -285,8 +291,8 @@ export class DashboardComponent {
     maintainAspectRatio: false,
     indexAxis: 'y',
     scales: {
-      x: { beginAtZero: true, ticks: { color: '#666', callback: (v) => '$' + v }, grid: { color: 'rgba(255,255,255,0.05)' } },
-      y: { ticks: { color: '#a0a0a0' }, grid: { display: false } },
+      x: { beginAtZero: true, ticks: { color: '#5e4025', callback: (v) => '$' + v, font: { family: 'VT323' } }, grid: { color: 'rgba(74,42,10,0.15)' } },
+      y: { ticks: { color: '#2c1810', font: { family: 'VT323' } }, grid: { display: false } },
     },
     plugins: { legend: { display: false } },
   };
@@ -295,7 +301,7 @@ export class DashboardComponent {
     const data = this.findService.categoryBreakdown();
     return {
       labels: data.map((d) => d.label),
-      datasets: [{ data: data.map((d) => d.count), backgroundColor: CHART_COLORS.slice(0, data.length), borderWidth: 0 }],
+      datasets: [{ data: data.map((d) => d.count), backgroundColor: CHART_COLORS.slice(0, data.length), borderWidth: 2, borderColor: '#4a2a0a' }],
     };
   });
 
@@ -303,7 +309,7 @@ export class DashboardComponent {
     const data = this.findService.materialBreakdown();
     return {
       labels: data.map((d) => d.label),
-      datasets: [{ data: data.map((d) => d.count), backgroundColor: CHART_COLORS.slice(0, data.length), borderWidth: 0 }],
+      datasets: [{ data: data.map((d) => d.count), backgroundColor: CHART_COLORS.slice(0, data.length), borderWidth: 2, borderColor: '#4a2a0a' }],
     };
   });
 
@@ -313,11 +319,13 @@ export class DashboardComponent {
       labels: data.map((d) => d.month),
       datasets: [{
         data: data.map((d) => d.count),
-        borderColor: '#d4a017',
-        backgroundColor: 'rgba(212,160,23,0.15)',
+        borderColor: '#daa520',
+        backgroundColor: 'rgba(218,165,32,0.2)',
         fill: true,
-        tension: 0.4,
-        pointBackgroundColor: '#d4a017',
+        tension: 0.3,
+        pointBackgroundColor: '#daa520',
+        pointBorderColor: '#4a2a0a',
+        pointBorderWidth: 2,
       }],
     };
   });
@@ -329,8 +337,9 @@ export class DashboardComponent {
       datasets: [{
         data: data.map((d) => d.value),
         backgroundColor: CHART_COLORS.slice(0, data.length),
-        borderWidth: 0,
-        borderRadius: 4,
+        borderWidth: 2,
+        borderColor: '#4a2a0a',
+        borderRadius: 2,
       }],
     };
   });

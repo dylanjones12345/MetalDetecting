@@ -12,9 +12,15 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
         <span class="brand-text">DetectorLog</span>
       </a>
       <div class="nav-links">
-        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
-        <a routerLink="/finds" routerLinkActive="active">My Finds</a>
-        <a routerLink="/add" routerLinkActive="active" class="btn-add">+ Log Find</a>
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <span class="nav-icon">🏠</span> Dashboard
+        </a>
+        <a routerLink="/finds" routerLinkActive="active">
+          <span class="nav-icon">🎒</span> My Finds
+        </a>
+        <a routerLink="/add" routerLinkActive="active" class="btn-add">
+          <span class="nav-icon">⚔️</span> Log Find
+        </a>
       </div>
     </nav>
   `,
@@ -23,59 +29,79 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 2rem;
-      height: 64px;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      height: 56px;
+      background: linear-gradient(180deg, var(--surface-light) 0%, var(--surface) 40%, var(--surface-dark) 100%);
+      border-bottom: 3px solid var(--border);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.2),
+        0 3px 0 rgba(0,0,0,0.3);
       position: sticky;
       top: 0;
       z-index: 100;
-      backdrop-filter: blur(12px);
     }
     .brand {
       display: flex;
       align-items: center;
       gap: 0.5rem;
       text-decoration: none;
-      color: var(--text);
-      font-weight: 700;
-      font-size: 1.25rem;
     }
-    .brand-icon { font-size: 1.5rem; }
+    .brand-icon { font-size: 1.3rem; }
     .brand-text {
-      background: linear-gradient(135deg, var(--gold), var(--gold-light));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.7rem;
+      color: var(--gold);
+      text-shadow: 2px 2px 0 var(--border), -1px -1px 0 var(--border),
+        1px -1px 0 var(--border), -1px 1px 0 var(--border);
     }
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: 0.15rem;
     }
     .nav-links a {
       text-decoration: none;
-      color: var(--text-muted);
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
+      color: var(--text);
+      padding: 0.35rem 0.75rem;
+      border-radius: 0;
       font-weight: 500;
-      font-size: 0.9rem;
-      transition: all 0.2s;
+      font-size: 1rem;
+      transition: all 0.15s;
+      border: 2px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
     }
-    .nav-links a:hover { color: var(--text); background: var(--surface-hover); }
-    .nav-links a.active { color: var(--gold); background: var(--surface-hover); }
+    .nav-icon { font-size: 0.9rem; }
+    .nav-links a:hover {
+      background: rgba(0,0,0,0.1);
+      border-color: var(--border-light);
+    }
+    .nav-links a.active {
+      color: var(--text);
+      background: rgba(0,0,0,0.12);
+      border: 2px solid var(--border);
+      border-top-color: var(--border-light);
+      border-left-color: var(--border-light);
+      box-shadow: inset 1px 1px 2px rgba(0,0,0,0.2);
+    }
     .btn-add {
-      background: linear-gradient(135deg, var(--gold), var(--gold-dark)) !important;
-      color: var(--bg) !important;
-      font-weight: 600 !important;
-      padding: 0.5rem 1.25rem !important;
+      background: linear-gradient(180deg, #4caf50 0%, #2d8c3e 100%) !important;
+      color: var(--text-light) !important;
+      border: 2px solid #1a5c1a !important;
+      border-top-color: #6fcf6f !important;
+      border-left-color: #6fcf6f !important;
+      box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+      text-shadow: 1px 1px 0 rgba(0,0,0,0.4);
     }
-    .btn-add:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-add:hover {
+      filter: brightness(1.1);
+    }
 
     @media (max-width: 600px) {
-      .navbar { padding: 0 1rem; }
+      .navbar { padding: 0 0.75rem; }
       .brand-text { display: none; }
-      .nav-links a { padding: 0.5rem 0.75rem; font-size: 0.8rem; }
+      .nav-links a { padding: 0.35rem 0.5rem; font-size: 0.85rem; }
     }
   `,
 })
