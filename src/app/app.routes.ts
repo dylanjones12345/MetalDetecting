@@ -12,7 +12,6 @@ export const routes: Routes = [
   { path: 'wiki', component: WikiComponent },
   { path: 'add', component: FindFormComponent },
   { path: 'edit/:id', component: FindFormComponent },
-  { path: 'finds', redirectTo: 'items' },
-  { path: 'finds/:id', redirectTo: 'items/:id' },
+  { path: 'finds', redirectTo: 'items', pathMatch: 'full' },
   { path: '**', redirectTo: '' },
 ];
