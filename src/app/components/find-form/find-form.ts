@@ -18,177 +18,182 @@ import {
   imports: [FormsModule],
   template: `
     @if (!auth.isAdmin()) {
-      <div class="no-access osrs-panel" style="max-width:500px;margin:2rem auto;padding:2rem;text-align:center;">
-        <h2>🔒 Admin Only</h2>
-        <p style="color:var(--text-muted);margin-top:0.5rem;">You must be logged in as admin to log items.</p>
+      <div class="page">
+        <div class="content" style="text-align:center;padding:3rem">
+          <h2>Admin Only</h2>
+          <p style="color:#777;margin-top:0.5rem">You must be logged in as admin to log items.</p>
+        </div>
       </div>
     } @else {
-      <div class="form-page">
-        <div class="form-header">
-          <h1 class="osrs-heading">{{ isEditing ? '📝 Edit Item' : '⚔️ Log a New Item' }}</h1>
-          <p>{{ isEditing ? 'Update the details below.' : 'Record your latest discovery, adventurer!' }}</p>
+      <div class="page">
+        <div class="content">
+          <h1 class="page-title">{{ isEditing ? 'Edit Item' : 'Log a New Item' }}</h1>
+          <p class="page-sub">{{ isEditing ? 'Update the details below.' : 'Record your latest discovery.' }}</p>
+
+          <form (ngSubmit)="onSubmit()" class="item-form" #itemForm="ngForm">
+            <section class="form-section">
+              <h2 class="section-title">Basic Info</h2>
+              <div class="form-row">
+                <div class="form-group grow-2">
+                  <label for="name">Name / Description *</label>
+                  <input id="name" type="text" [(ngModel)]="model.name" name="name" required
+                    placeholder="e.g. 1942 Mercury Dime" />
+                </div>
+                <div class="form-group">
+                  <label for="dateFound">Date Found *</label>
+                  <input id="dateFound" type="date" [(ngModel)]="model.dateFound" name="dateFound" required />
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="category">Category *</label>
+                  <select id="category" [(ngModel)]="model.category" name="category" required>
+                    @for (opt of categoryOptions; track opt.value) {
+                      <option [value]="opt.value">{{ opt.label }} (+{{ opt.xp }} xp)</option>
+                    }
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="tone">Detector Tone</label>
+                  <select id="tone" [(ngModel)]="model.tone" name="tone">
+                    @for (opt of toneOptions; track opt.value) {
+                      <option [value]="opt.value">{{ opt.label }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="condition">Condition</label>
+                  <select id="condition" [(ngModel)]="model.condition" name="condition">
+                    @for (opt of conditionOptions; track opt.value) {
+                      <option [value]="opt.value">{{ opt.label }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+              @if (model.category) {
+                <div class="xp-preview">
+                  XP Reward: <strong>+{{ getXpForCategory(model.category) }}</strong>
+                </div>
+              }
+            </section>
+
+            <section class="form-section">
+              <h2 class="section-title">Measurements</h2>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="depth">Depth</label>
+                  <div class="input-unit">
+                    <input id="depth" type="number" [(ngModel)]="model.depth" name="depth" min="0" step="0.5" placeholder="0" />
+                    <select [(ngModel)]="model.depthUnit" name="depthUnit" class="unit">
+                      <option value="in">in</option>
+                      <option value="cm">cm</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="weight">Weight</label>
+                  <div class="input-unit">
+                    <input id="weight" type="number" [(ngModel)]="model.weight" name="weight" min="0" step="0.1" placeholder="0" />
+                    <select [(ngModel)]="model.weightUnit" name="weightUnit" class="unit">
+                      <option value="g">g</option>
+                      <option value="oz">oz</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="estimatedValue">Est. Value ($)</label>
+                  <input id="estimatedValue" type="number" [(ngModel)]="model.estimatedValue" name="estimatedValue" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+            </section>
+
+            <section class="form-section">
+              <h2 class="section-title">Location & Notes</h2>
+              <div class="form-group">
+                <label for="location">Location</label>
+                <input id="location" type="text" [(ngModel)]="model.location" name="location" placeholder="e.g. Old farmstead on Route 7" />
+              </div>
+              <div class="form-group">
+                <label for="imageUrl">Image URL</label>
+                <input id="imageUrl" type="url" [(ngModel)]="model.imageUrl" name="imageUrl" placeholder="https://..." />
+              </div>
+              <div class="form-group">
+                <label for="notes">Notes</label>
+                <textarea id="notes" [(ngModel)]="model.notes" name="notes" rows="4" placeholder="Extra details..."></textarea>
+              </div>
+            </section>
+
+            <div class="form-actions">
+              <button type="button" class="osrs-btn" (click)="onCancel()">Cancel</button>
+              <button type="submit" class="osrs-btn osrs-btn-primary" [disabled]="itemForm.invalid">
+                {{ isEditing ? 'Save Changes' : 'Log Item' }}
+              </button>
+            </div>
+          </form>
         </div>
-
-        <form (ngSubmit)="onSubmit()" class="find-form" #findForm="ngForm">
-          <div class="form-section osrs-panel">
-            <h2>🏷️ Basic Info</h2>
-            <div class="form-row">
-              <div class="form-group flex-2">
-                <label for="name">Name / Description *</label>
-                <input id="name" type="text" [(ngModel)]="model.name" name="name" required
-                  placeholder="e.g. 1942 Mercury Dime" />
-              </div>
-              <div class="form-group flex-1">
-                <label for="dateFound">Date Found *</label>
-                <input id="dateFound" type="date" [(ngModel)]="model.dateFound" name="dateFound" required />
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group flex-1">
-                <label for="category">Category *</label>
-                <select id="category" [(ngModel)]="model.category" name="category" required>
-                  @for (opt of categoryOptions; track opt.value) {
-                    <option [value]="opt.value">{{ opt.label }} (+{{ opt.xp }} xp)</option>
-                  }
-                </select>
-              </div>
-              <div class="form-group flex-1">
-                <label for="tone">Detector Tone</label>
-                <select id="tone" [(ngModel)]="model.tone" name="tone">
-                  @for (opt of toneOptions; track opt.value) {
-                    <option [value]="opt.value">{{ opt.label }}</option>
-                  }
-                </select>
-              </div>
-              <div class="form-group flex-1">
-                <label for="condition">Condition</label>
-                <select id="condition" [(ngModel)]="model.condition" name="condition">
-                  @for (opt of conditionOptions; track opt.value) {
-                    <option [value]="opt.value">{{ opt.label }}</option>
-                  }
-                </select>
-              </div>
-            </div>
-
-            @if (model.category) {
-              <div class="xp-preview">
-                XP Reward: <strong>+{{ getXpForCategory(model.category) }} xp</strong>
-              </div>
-            }
-          </div>
-
-          <div class="form-section osrs-panel">
-            <h2>📏 Measurements</h2>
-            <div class="form-row">
-              <div class="form-group flex-1">
-                <label for="depth">Depth</label>
-                <div class="input-with-unit">
-                  <input id="depth" type="number" [(ngModel)]="model.depth" name="depth"
-                    min="0" step="0.5" placeholder="0" />
-                  <select [(ngModel)]="model.depthUnit" name="depthUnit" class="unit-select">
-                    <option value="in">inches</option>
-                    <option value="cm">cm</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-group flex-1">
-                <label for="weight">Weight</label>
-                <div class="input-with-unit">
-                  <input id="weight" type="number" [(ngModel)]="model.weight" name="weight"
-                    min="0" step="0.1" placeholder="0" />
-                  <select [(ngModel)]="model.weightUnit" name="weightUnit" class="unit-select">
-                    <option value="g">grams</option>
-                    <option value="oz">oz</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-group flex-1">
-                <label for="estimatedValue">Est. Value (gp) 💰</label>
-                <input id="estimatedValue" type="number" [(ngModel)]="model.estimatedValue"
-                  name="estimatedValue" min="0" step="0.01" placeholder="0.00" />
-              </div>
-            </div>
-          </div>
-
-          <div class="form-section osrs-panel">
-            <h2>🗺️ Location & Notes</h2>
-            <div class="form-group">
-              <label for="location">Location</label>
-              <input id="location" type="text" [(ngModel)]="model.location" name="location"
-                placeholder="e.g. Old farmstead on Route 7" />
-            </div>
-            <div class="form-group">
-              <label for="imageUrl">Image URL</label>
-              <input id="imageUrl" type="url" [(ngModel)]="model.imageUrl" name="imageUrl"
-                placeholder="https://..." />
-            </div>
-            <div class="form-group">
-              <label for="notes">Notes</label>
-              <textarea id="notes" [(ngModel)]="model.notes" name="notes" rows="4"
-                placeholder="Any extra details about this item..."></textarea>
-            </div>
-          </div>
-
-          <div class="form-actions">
-            <button type="button" class="btn-secondary" (click)="onCancel()">Cancel</button>
-            <button type="submit" class="btn-primary" [disabled]="findForm.invalid">
-              {{ isEditing ? '💾 Save Changes' : '✅ Log Item' }}
-            </button>
-          </div>
-        </form>
       </div>
     }
   `,
   styles: `
-    .form-page { max-width: 800px; margin: 0 auto; padding: 1.5rem; }
-    .form-header { margin-bottom: 1.5rem; text-align: center; }
-    .form-header h1 { font-size: 0.7rem; margin-bottom: 0.4rem; }
-    .form-header p { color: var(--text-muted); }
-    .find-form { display: flex; flex-direction: column; gap: 1rem; }
-    .form-section { padding: 1.25rem; }
-    .form-section h2 { font-size: 1.1rem; color: var(--text); margin-bottom: 0.85rem; border-bottom: 2px solid var(--border-light); padding-bottom: 0.35rem; }
-    .form-row { display: flex; gap: 0.85rem; flex-wrap: wrap; }
-    .flex-1 { flex: 1; min-width: 150px; }
-    .flex-2 { flex: 2; min-width: 200px; }
-    .form-group { margin-bottom: 0.85rem; display: flex; flex-direction: column; }
-    .form-group label { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.3rem; font-weight: 500; }
-    input, select, textarea {
-      background: var(--surface-light);
-      border: 2px solid var(--border); border-bottom-color: var(--border-light); border-right-color: var(--border-light);
-      color: var(--text); padding: 0.5rem 0.7rem; font-size: 1rem; font-family: inherit;
-      box-shadow: inset 1px 1px 2px rgba(0,0,0,0.15);
+    .page { position: relative; z-index: 1; }
+    .content { max-width: 800px; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
+
+    .page-title {
+      font-family: var(--font-heading); font-size: 1.5rem; font-weight: 700;
+      color: #18140c; margin-bottom: 0.25rem;
     }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--gold-dark); }
+    .page-sub { color: #777; margin-bottom: 1.25rem; }
+
+    .item-form { display: flex; flex-direction: column; gap: 1rem; }
+
+    .form-section {
+      background: var(--body-main, #e2dbc8);
+      border: 2px solid var(--body-border, #94866d);
+      padding: 1rem;
+    }
+    .section-title {
+      font-family: var(--font-heading);
+      font-size: 1rem; font-weight: 700; color: #3c352a;
+      border-bottom: 1px solid #b8a282;
+      padding-bottom: 0.3rem; margin-bottom: 0.75rem;
+    }
+
+    .form-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .form-group { flex: 1; min-width: 140px; margin-bottom: 0.65rem; display: flex; flex-direction: column; }
+    .grow-2 { flex: 2; min-width: 200px; }
+
+    label {
+      font-size: 0.8rem; font-weight: 600; color: #605443;
+      margin-bottom: 0.2rem;
+    }
+    input, select, textarea {
+      font-family: var(--font-body); font-size: 0.875rem;
+      padding: 0.4rem 0.6rem;
+      border: 2px solid #94866d; background: #f9f6ef; color: #333;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #936039; }
     textarea { resize: vertical; }
-    .input-with-unit { display: flex; gap: 0.4rem; }
-    .input-with-unit input { flex: 1; }
-    .unit-select { width: 90px; }
+
+    .input-unit { display: flex; gap: 0.35rem; }
+    .input-unit input { flex: 1; }
+    .unit { width: 60px; }
+
     .xp-preview {
-      padding: 0.5rem 0.75rem;
-      background: linear-gradient(180deg, #3a3a2a, #2a2a1a);
-      border: 2px solid #555540; border-bottom-color: #3a3a2a; border-right-color: #3a3a2a;
-      color: #b0b090; font-size: 0.95rem; display: inline-block;
+      display: inline-block;
+      padding: 0.35rem 0.65rem;
+      background: #1b1612; border: 1px solid #3e362f;
+      color: #b79d7e; font-size: 0.85rem;
     }
     .xp-preview strong { color: #00ff00; }
-    .form-actions { display: flex; justify-content: flex-end; gap: 0.6rem; padding-top: 0.25rem; }
-    .btn-primary, .btn-secondary {
-      padding: 0.6rem 1.5rem; font-weight: 600; font-size: 1rem;
-      cursor: pointer; font-family: inherit; transition: filter 0.15s;
+
+    .form-actions {
+      display: flex; justify-content: flex-end; gap: 0.5rem;
     }
-    .btn-primary {
-      background: linear-gradient(180deg, #4caf50 0%, #2d8c3e 100%);
-      color: var(--text-light); border: 2px solid #1a5c1a; border-top-color: #6fcf6f; border-left-color: #6fcf6f;
-      box-shadow: 2px 2px 0 rgba(0,0,0,0.3); text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+
+    @media (max-width: 600px) {
+      .content { padding: 1rem 0.75rem; }
+      .form-row { flex-direction: column; }
     }
-    .btn-primary:hover:not(:disabled) { filter: brightness(1.1); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; filter: saturate(0.3); }
-    .btn-secondary {
-      background: linear-gradient(180deg, var(--surface-light), var(--surface-dark));
-      color: var(--text); border: 2px solid var(--border); border-top-color: var(--border-light); border-left-color: var(--border-light);
-      box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
-    }
-    .btn-secondary:hover { filter: brightness(1.05); }
-    @media (max-width: 600px) { .form-page { padding: 1rem; } .form-row { flex-direction: column; } }
   `,
 })
 export class FindFormComponent implements OnInit {

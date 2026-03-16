@@ -9,133 +9,138 @@ import { XpService } from '../../services/xp.service';
   imports: [RouterLink, RouterLinkActive],
   template: `
     <nav class="navbar">
-      <a routerLink="/" class="brand">
-        <span class="brand-icon">⛏️</span>
-        <span class="brand-text">DetectorLog</span>
-      </a>
+      <div class="nav-inner">
+        <a routerLink="/" class="brand">
+          <span class="brand-icon">⛏️</span>
+          <span class="brand-text">DetectorLog</span>
+        </a>
 
-      <div class="nav-center">
-        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-          <span class="nav-icon">🏠</span> Dashboard
-        </a>
-        <a routerLink="/items" routerLinkActive="active">
-          <span class="nav-icon">🎒</span> Items
-        </a>
-        <a routerLink="/wiki" routerLinkActive="active">
-          <span class="nav-icon">📖</span> Wiki
-        </a>
-        @if (auth.isAdmin()) {
-          <a routerLink="/add" routerLinkActive="active" class="btn-add">
-            <span class="nav-icon">⚔️</span> Log Item
+        <div class="nav-links">
+          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+            Dashboard
           </a>
-        }
-      </div>
-
-      <div class="nav-right">
-        <div class="level-badge" title="Metal Detecting Level">
-          <span class="level-icon">⛏️</span>
-          <span class="level-num">{{ xp.currentLevel() }}</span>
+          <a routerLink="/items" routerLinkActive="active">Items</a>
+          <a routerLink="/wiki" routerLinkActive="active">Wiki</a>
+          @if (auth.isAdmin()) {
+            <a routerLink="/add" routerLinkActive="active" class="nav-log">Log Item</a>
+          }
         </div>
 
-        @if (auth.isConfigured()) {
-          @if (auth.isLoggedIn()) {
-            <div class="user-info">
-              @if (auth.photoURL()) {
-                <img [src]="auth.photoURL()" class="avatar" alt="avatar" referrerpolicy="no-referrer" />
-              }
-              <button class="btn-logout" (click)="auth.logout()">Logout</button>
-            </div>
-          } @else {
-            <button class="btn-login" (click)="auth.login()">🔑 Login</button>
+        <div class="nav-right">
+          <div class="level-badge" title="Metal Detecting Level">
+            <span class="level-label">Lvl</span>
+            <span class="level-num">{{ xp.currentLevel() }}</span>
+          </div>
+
+          @if (auth.isConfigured()) {
+            @if (auth.isLoggedIn()) {
+              <div class="user-info">
+                @if (auth.photoURL()) {
+                  <img [src]="auth.photoURL()" class="avatar" alt="" referrerpolicy="no-referrer" />
+                }
+                <button class="osrs-btn" (click)="auth.logout()">Logout</button>
+              </div>
+            } @else {
+              <button class="osrs-btn" (click)="auth.login()">Log in</button>
+            }
           }
-        }
+        </div>
       </div>
     </nav>
   `,
   styles: `
     .navbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 1.25rem;
-      height: 56px;
-      background: linear-gradient(180deg, var(--surface-light) 0%, var(--surface) 40%, var(--surface-dark) 100%);
-      border-bottom: 3px solid var(--border);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 3px 0 rgba(0,0,0,0.3);
+      background: linear-gradient(180deg, #4a3d2e, var(--btn-dark, #18140c));
+      border-bottom: 3px solid #0d0a06;
       position: sticky;
       top: 0;
       z-index: 100;
     }
-    .brand {
-      display: flex; align-items: center; gap: 0.4rem; text-decoration: none;
-    }
-    .brand-icon { font-size: 1.3rem; }
-    .brand-text {
-      font-family: 'Press Start 2P', cursive; font-size: 0.6rem;
-      color: var(--gold);
-      text-shadow: 2px 2px 0 var(--border), -1px -1px 0 var(--border),
-        1px -1px 0 var(--border), -1px 1px 0 var(--border);
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1rem;
+      height: 52px;
     }
 
-    .nav-center {
+    .brand {
+      display: flex; align-items: center; gap: 0.4rem;
+      text-decoration: none;
+    }
+    .brand-icon { font-size: 1.2rem; }
+    .brand-text {
+      font-family: var(--font-heading, 'PT Serif', serif);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #ffd700;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    }
+
+    .nav-links {
       display: flex; align-items: center; gap: 0.15rem;
     }
-    .nav-center a {
-      text-decoration: none; color: var(--text);
-      padding: 0.3rem 0.65rem;
-      font-size: 1rem; display: flex; align-items: center; gap: 0.25rem;
-      border: 2px solid transparent; transition: all 0.15s;
+    .nav-links a {
+      text-decoration: none;
+      color: #c0a886;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+      border-bottom: 2px solid transparent;
     }
-    .nav-icon { font-size: 0.85rem; }
-    .nav-center a:hover { background: rgba(0,0,0,0.1); border-color: var(--border-light); }
-    .nav-center a.active {
-      background: rgba(0,0,0,0.12);
-      border: 2px solid var(--border); border-top-color: var(--border-light); border-left-color: var(--border-light);
-      box-shadow: inset 1px 1px 2px rgba(0,0,0,0.2);
+    .nav-links a:hover {
+      color: #ffd700;
+      background: rgba(255,255,255,0.05);
     }
-    .btn-add {
-      background: linear-gradient(180deg, #4caf50 0%, #2d8c3e 100%) !important;
-      color: var(--text-light) !important;
-      border: 2px solid #1a5c1a !important; border-top-color: #6fcf6f !important; border-left-color: #6fcf6f !important;
-      box-shadow: 2px 2px 0 rgba(0,0,0,0.3); text-shadow: 1px 1px 0 rgba(0,0,0,0.4);
+    .nav-links a.active {
+      color: #ffd700;
+      border-bottom-color: #ffd700;
+      background: rgba(255,215,0,0.08);
     }
-    .btn-add:hover { filter: brightness(1.1); }
+    .nav-log {
+      background: linear-gradient(180deg, #4a8c3e, #2d6b25) !important;
+      color: #fff !important;
+      border: 1px solid #1a4a12 !important;
+      border-bottom: 1px solid #1a4a12 !important;
+      padding: 0.3rem 0.7rem !important;
+      margin-left: 0.25rem;
+      text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+    }
+    .nav-log:hover { filter: brightness(1.15); }
+    .nav-log.active { border-bottom-color: #1a4a12 !important; }
 
     .nav-right { display: flex; align-items: center; gap: 0.5rem; }
 
     .level-badge {
       display: flex; align-items: center; gap: 0.25rem;
-      background: linear-gradient(180deg, #3a3a2a, #2a2a1a);
-      border: 2px solid var(--border); border-top-color: #5a5a4a; border-left-color: #5a5a4a;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid #4a3d2e;
       padding: 0.2rem 0.5rem;
-      box-shadow: inset 0 0 4px rgba(0,0,0,0.4);
+      border-radius: 2px;
     }
-    .level-icon { font-size: 0.85rem; }
+    .level-label { font-size: 0.7rem; color: #94866d; }
     .level-num {
-      font-family: 'Press Start 2P', cursive; font-size: 0.55rem;
-      color: var(--gold); text-shadow: 1px 1px 0 #000;
+      font-family: var(--font-heading, 'PT Serif', serif);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #ffd700;
+      text-shadow: 1px 1px 0 #000;
     }
 
-    .user-info { display: flex; align-items: center; gap: 0.4rem; }
+    .user-info { display: flex; align-items: center; gap: 0.35rem; }
     .avatar {
-      width: 28px; height: 28px; border-radius: 0;
-      border: 2px solid var(--border);
+      width: 26px; height: 26px;
+      border: 1px solid #4a3d2e;
+      border-radius: 2px;
     }
-    .btn-login, .btn-logout {
-      font-family: inherit; font-size: 0.9rem; cursor: pointer;
-      padding: 0.25rem 0.6rem;
-      border: 2px solid var(--border); border-top-color: var(--border-light); border-left-color: var(--border-light);
-      background: linear-gradient(180deg, var(--surface-light), var(--surface-dark));
-      color: var(--text); box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
-      transition: filter 0.15s;
-    }
-    .btn-login:hover, .btn-logout:hover { filter: brightness(1.05); }
 
     @media (max-width: 640px) {
-      .navbar { padding: 0 0.5rem; gap: 0.25rem; }
+      .nav-inner { padding: 0 0.5rem; }
       .brand-text { display: none; }
-      .nav-center a { padding: 0.25rem 0.4rem; font-size: 0.85rem; }
-      .nav-center a span:last-child { display: none; }
+      .nav-links a { padding: 0.35rem 0.45rem; font-size: 0.8rem; }
     }
   `,
 })

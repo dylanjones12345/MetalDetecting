@@ -1,27 +1,50 @@
+/* ==========================================================
+   DetectorLog — OSRS Homepage & Wiki themed global styles
+   Colors sourced from oldschool.runescape.wiki/w/RuneScape:Theme
+   ========================================================== */
+
 :root {
-  --bg: #1565a3;
-  --bg-deep: #0e4a75;
-  --bg-sand: #e8cfa0;
-  --surface: #d2b87a;
-  --surface-light: #e5d3a8;
-  --surface-dark: #b89b5e;
-  --surface-hover: #c8ab6e;
-  --border: #4a2a0a;
-  --border-light: #7a5430;
-  --border-mid: #5c3a1a;
-  --text: #2c1810;
-  --text-muted: #5e4025;
-  --text-light: #f5e6c8;
+  /* OSRS body palette */
+  --body-main: #e2dbc8;
+  --body-light: #d8ccb4;
+  --body-mid: #d0bd97;
+  --body-dark: #b8a282;
+  --body-bg: #c0a886;
+  --body-border: #94866d;
+
+  /* Buttons & links */
+  --btn-border: #3c352a;
+  --btn-dark: #18140c;
+  --btn-light: #3a301d;
+  --brown: #605443;
+  --link: #936039;
+  --link-bg: #52351e;
+
+  /* OSRS accent colors */
   --gold: #ffd700;
   --gold-dark: #daa520;
-  --gold-glow: rgba(255, 215, 0, 0.4);
+  --gold-glow: rgba(255, 215, 0, 0.35);
   --osrs-orange: #ff981f;
   --osrs-green: #00ff00;
   --osrs-red: #ff3333;
   --osrs-cyan: #00ffff;
   --osrs-yellow: #ffff00;
-  --sand-shore: #f0dca0;
-  --palm: #2d8c3e;
+
+  /* Grays */
+  --gray-700: #333;
+  --gray-500: #777;
+  --gray-200: #ccc;
+  --gray-100: #eee;
+
+  /* Dark panel (for game-style widgets) */
+  --panel-dark: #1b1612;
+  --panel-mid: #28221d;
+  --panel-border: #3e362f;
+  --panel-text: #b79d7e;
+
+  /* Typography */
+  --font-body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-heading: 'PT Serif', Georgia, 'Times New Roman', serif;
 }
 
 *, *::before, *::after {
@@ -31,41 +54,169 @@
 }
 
 html {
-  font-family: 'VT323', 'Courier New', monospace;
-  font-size: 18px;
-  color: var(--text);
-  -webkit-font-smoothing: auto;
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--gray-700);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   min-height: 100vh;
-  background:
-    linear-gradient(180deg,
-      #87ceeb 0%,
-      #5db8e8 8%,
-      var(--bg) 20%,
-      var(--bg-deep) 50%,
-      #0c3d5f 100%
-    );
-  background-attachment: fixed;
+  background: var(--body-bg);
   position: relative;
 }
 
-/* Beach sand footer strip */
+/* Stone texture background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      rgba(0,0,0,0.02) 2px,
+      transparent 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      rgba(0,0,0,0.01) 2px,
+      transparent 4px
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Sand footer strip */
 body::after {
   content: '';
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 50px;
-  background:
-    linear-gradient(180deg, transparent, rgba(232,207,160,0.3) 30%, var(--bg-sand) 100%);
+  height: 44px;
+  background: linear-gradient(180deg, transparent, rgba(192,168,134,0.5) 30%, var(--body-dark) 100%);
   z-index: 9998;
   pointer-events: none;
 }
 
-/* Crab decorations on the sand strip */
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+::selection {
+  background: var(--gold);
+  color: var(--btn-dark);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: var(--body-dark); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--body-mid), var(--body-dark));
+  border: 1px solid var(--body-border);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--body-mid); }
+
+/* =========================
+   OSRS-style panels
+   ========================= */
+.osrs-panel {
+  background: var(--body-main);
+  border: 2px solid var(--body-border);
+  border-radius: 0;
+}
+
+/* Dark game-style panel */
+.game-panel {
+  background: linear-gradient(180deg, var(--panel-mid), var(--panel-dark));
+  border: 2px solid var(--panel-border);
+  color: var(--panel-text);
+}
+
+/* =========================
+   OSRS heading style
+   ========================= */
+.osrs-heading {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--btn-dark);
+  letter-spacing: 0.02em;
+}
+
+/* Gold heading variant (game-style) */
+.osrs-heading-gold {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--gold);
+  text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+}
+
+/* =========================
+   OSRS-style buttons
+   ========================= */
+.osrs-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 1.25rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--body-main);
+  background: linear-gradient(180deg, var(--brown), var(--btn-dark));
+  border: 2px solid var(--btn-border);
+  cursor: pointer;
+  text-decoration: none;
+  transition: filter 0.15s;
+}
+.osrs-btn:hover { filter: brightness(1.2); text-decoration: none; }
+
+.osrs-btn-primary {
+  background: linear-gradient(180deg, #4a8c3e, #2d6b25);
+  border-color: #1a4a12;
+  color: #fff;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+}
+.osrs-btn-primary:hover { filter: brightness(1.15); }
+
+.osrs-btn-danger {
+  background: linear-gradient(180deg, #c0392b, #922b21);
+  border-color: #6b1a14;
+  color: #fff;
+}
+
+/* =========================
+   OSRS Highscores table
+   ========================= */
+.hs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.hs-table th {
+  background: linear-gradient(180deg, var(--brown), var(--btn-dark));
+  color: var(--body-main);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  font-family: var(--font-body);
+  border: 1px solid var(--btn-border);
+}
+.hs-table td {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--body-border);
+}
+.hs-table tbody tr:nth-child(odd) { background: var(--body-main); }
+.hs-table tbody tr:nth-child(even) { background: var(--body-light); }
+.hs-table tbody tr:hover { background: var(--body-mid); }
+
+/* =========================
+   Beach decorations
+   ========================= */
 .crab-left, .crab-right {
   position: fixed;
   bottom: 4px;
@@ -73,92 +224,54 @@ body::after {
   pointer-events: none;
   image-rendering: pixelated;
 }
-.crab-left { left: 5%; width: 48px; height: 48px; }
-.crab-right { right: 8%; width: 40px; height: 40px; transform: scaleX(-1); }
+.crab-left { left: 5%; width: 42px; height: 42px; }
+.crab-right { right: 8%; width: 36px; height: 36px; transform: scaleX(-1); }
 
-/* Palm tree decorations */
 .palm-left, .palm-right {
   position: fixed;
-  bottom: 20px;
+  bottom: 16px;
   z-index: 9997;
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.4;
   image-rendering: pixelated;
 }
-.palm-left { left: -20px; width: 120px; }
-.palm-right { right: -20px; width: 100px; transform: scaleX(-1); }
+.palm-left { left: -20px; width: 110px; }
+.palm-right { right: -20px; width: 95px; transform: scaleX(-1); }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 12px; }
-::-webkit-scrollbar-track { background: var(--border); border: 2px solid var(--border-light); }
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, var(--surface-light), var(--surface-dark));
-  border: 2px solid var(--border);
-}
-::-webkit-scrollbar-thumb:hover { background: var(--surface); }
-
-::selection {
-  background: var(--gold);
-  color: var(--border);
-}
-
-a { color: inherit; }
-
-/* OSRS-style panel */
-.osrs-panel {
-  background: linear-gradient(180deg, var(--surface-light) 0%, var(--surface) 40%, var(--surface-dark) 100%);
-  border: 3px solid var(--border);
-  border-top-color: var(--border-light);
-  border-left-color: var(--border-light);
-  box-shadow:
-    inset 1px 1px 0 rgba(255,255,255,0.15),
-    inset -1px -1px 0 rgba(0,0,0,0.15),
-    3px 3px 0 rgba(0,0,0,0.3);
-}
-
-/* Pixel heading font */
-.osrs-heading {
-  font-family: 'Press Start 2P', cursive;
-  color: var(--gold);
-  text-shadow:
-    2px 2px 0 var(--border),
-    -1px -1px 0 var(--border),
-    1px -1px 0 var(--border),
-    -1px 1px 0 var(--border);
-  letter-spacing: 1px;
-}
-
-/* Music player bar */
+/* =========================
+   Music bar
+   ========================= */
 .music-bar {
   position: fixed;
-  bottom: 52px;
-  right: 16px;
+  bottom: 46px;
+  right: 12px;
   z-index: 10000;
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  background: linear-gradient(180deg, #3a3a2a, #2a2a1a);
-  border: 2px solid #555540;
-  border-top-color: #6a6a50;
-  border-left-color: #6a6a50;
-  padding: 0.25rem 0.6rem;
-  box-shadow: 2px 2px 0 rgba(0,0,0,0.4);
+  background: linear-gradient(180deg, var(--panel-mid), var(--panel-dark));
+  border: 1px solid var(--panel-border);
+  padding: 0.2rem 0.5rem;
   font-size: 0.75rem;
-  color: #b0b090;
+  color: var(--panel-text);
 }
 .music-bar button {
   background: none;
   border: none;
   color: var(--gold);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.9rem;
   padding: 0;
   line-height: 1;
 }
 .music-bar .track-name {
-  font-family: 'Press Start 2P', cursive;
-  font-size: 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 600;
   color: var(--osrs-green);
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .music-bar input[type="range"] {
   width: 50px;
