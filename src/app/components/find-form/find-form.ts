@@ -1,14 +1,15 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { FindService } from '../../services/find.service';
+import { ItemService } from '../../services/find.service';
 import { AuthService } from '../../services/auth.service';
 import {
-  DetectorFind,
+  DetectorItem,
   CATEGORY_LABELS,
   CONDITION_LABELS,
+  TONE_LABELS,
   CATEGORY_XP,
-  FindCategory,
+  ItemCategory,
 } from '../../models/find.model';
 
 @Component({
@@ -19,12 +20,12 @@ import {
     @if (!auth.isAdmin()) {
       <div class="no-access osrs-panel" style="max-width:500px;margin:2rem auto;padding:2rem;text-align:center;">
         <h2>🔒 Admin Only</h2>
-        <p style="color:var(--text-muted);margin-top:0.5rem;">You must be logged in as admin to log finds.</p>
+        <p style="color:var(--text-muted);margin-top:0.5rem;">You must be logged in as admin to log items.</p>
       </div>
     } @else {
       <div class="form-page">
         <div class="form-header">
-          <h1 class="osrs-heading">{{ isEditing ? '📝 Edit Find' : '⚔️ Log a New Find' }}</h1>
+          <h1 class="osrs-heading">{{ isEditing ? '📝 Edit Item' : '⚔️ Log a New Item' }}</h1>
           <p>{{ isEditing ? 'Update the details below.' : 'Record your latest discovery, adventurer!' }}</p>
         </div>
 
@@ -48,6 +49,14 @@ import {
                 <select id="category" [(ngModel)]="model.category" name="category" required>
                   @for (opt of categoryOptions; track opt.value) {
                     <option [value]="opt.value">{{ opt.label }} (+{{ opt.xp }} xp)</option>
+                  }
+                </select>
+              </div>
+              <div class="form-group flex-1">
+                <label for="tone">Detector Tone</label>
+                <select id="tone" [(ngModel)]="model.tone" name="tone">
+                  @for (opt of toneOptions; track opt.value) {
+                    <option [value]="opt.value">{{ opt.label }}</option>
                   }
                 </select>
               </div>
@@ -116,14 +125,14 @@ import {
             <div class="form-group">
               <label for="notes">Notes</label>
               <textarea id="notes" [(ngModel)]="model.notes" name="notes" rows="4"
-                placeholder="Any extra details about this find..."></textarea>
+                placeholder="Any extra details about this item..."></textarea>
             </div>
           </div>
 
           <div class="form-actions">
             <button type="button" class="btn-secondary" (click)="onCancel()">Cancel</button>
             <button type="submit" class="btn-primary" [disabled]="findForm.invalid">
-              {{ isEditing ? '💾 Save Changes' : '✅ Log Find' }}
+              {{ isEditing ? '💾 Save Changes' : '✅ Log Item' }}
             </button>
           </div>
         </form>
@@ -135,17 +144,12 @@ import {
     .form-header { margin-bottom: 1.5rem; text-align: center; }
     .form-header h1 { font-size: 0.7rem; margin-bottom: 0.4rem; }
     .form-header p { color: var(--text-muted); }
-
     .find-form { display: flex; flex-direction: column; gap: 1rem; }
     .form-section { padding: 1.25rem; }
-    .form-section h2 {
-      font-size: 1.1rem; color: var(--text); margin-bottom: 0.85rem;
-      border-bottom: 2px solid var(--border-light); padding-bottom: 0.35rem;
-    }
+    .form-section h2 { font-size: 1.1rem; color: var(--text); margin-bottom: 0.85rem; border-bottom: 2px solid var(--border-light); padding-bottom: 0.35rem; }
     .form-row { display: flex; gap: 0.85rem; flex-wrap: wrap; }
     .flex-1 { flex: 1; min-width: 150px; }
     .flex-2 { flex: 2; min-width: 200px; }
-
     .form-group { margin-bottom: 0.85rem; display: flex; flex-direction: column; }
     .form-group label { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.3rem; font-weight: 500; }
     input, select, textarea {
@@ -156,20 +160,16 @@ import {
     }
     input:focus, select:focus, textarea:focus { outline: none; border-color: var(--gold-dark); }
     textarea { resize: vertical; }
-
     .input-with-unit { display: flex; gap: 0.4rem; }
     .input-with-unit input { flex: 1; }
     .unit-select { width: 90px; }
-
     .xp-preview {
       padding: 0.5rem 0.75rem;
       background: linear-gradient(180deg, #3a3a2a, #2a2a1a);
       border: 2px solid #555540; border-bottom-color: #3a3a2a; border-right-color: #3a3a2a;
-      color: #b0b090; font-size: 0.95rem;
-      display: inline-block;
+      color: #b0b090; font-size: 0.95rem; display: inline-block;
     }
     .xp-preview strong { color: #00ff00; }
-
     .form-actions { display: flex; justify-content: flex-end; gap: 0.6rem; padding-top: 0.25rem; }
     .btn-primary, .btn-secondary {
       padding: 0.6rem 1.5rem; font-weight: 600; font-size: 1rem;
@@ -188,15 +188,11 @@ import {
       box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
     }
     .btn-secondary:hover { filter: brightness(1.05); }
-
-    @media (max-width: 600px) {
-      .form-page { padding: 1rem; }
-      .form-row { flex-direction: column; }
-    }
+    @media (max-width: 600px) { .form-page { padding: 1rem; } .form-row { flex-direction: column; } }
   `,
 })
 export class FindFormComponent implements OnInit {
-  private findService = inject(FindService);
+  private itemService = inject(ItemService);
   protected auth = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
@@ -204,9 +200,10 @@ export class FindFormComponent implements OnInit {
   isEditing = false;
   editId = '';
 
-  model: Omit<DetectorFind, 'id'> = {
+  model: Omit<DetectorItem, 'id'> = {
     name: '',
     category: 'coin',
+    tone: 'mid',
     dateFound: new Date().toISOString().split('T')[0],
     location: '',
     depth: 0,
@@ -220,14 +217,15 @@ export class FindFormComponent implements OnInit {
   };
 
   categoryOptions = Object.entries(CATEGORY_LABELS).map(([value, label]) => ({
-    value, label, xp: CATEGORY_XP[value as FindCategory],
+    value, label, xp: CATEGORY_XP[value as ItemCategory],
   }));
+  toneOptions = Object.entries(TONE_LABELS).map(([value, label]) => ({ value, label }));
   conditionOptions = Object.entries(CONDITION_LABELS).map(([value, label]) => ({ value, label }));
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
-      const existing = this.findService.getById(id);
+      const existing = this.itemService.getById(id);
       if (existing) {
         this.isEditing = true;
         this.editId = id;
@@ -237,19 +235,19 @@ export class FindFormComponent implements OnInit {
   }
 
   getXpForCategory(category: string): number {
-    return CATEGORY_XP[category as FindCategory] ?? 0;
+    return CATEGORY_XP[category as ItemCategory] ?? 0;
   }
 
   onSubmit() {
     if (this.isEditing) {
-      this.findService.update(this.editId, this.model);
+      this.itemService.update(this.editId, this.model);
     } else {
-      this.findService.add(this.model);
+      this.itemService.add(this.model);
     }
-    this.router.navigate(['/finds']);
+    this.router.navigate(['/items']);
   }
 
   onCancel() {
-    this.router.navigate([this.isEditing ? '/finds' : '/']);
+    this.router.navigate([this.isEditing ? '/items' : '/']);
   }
 }

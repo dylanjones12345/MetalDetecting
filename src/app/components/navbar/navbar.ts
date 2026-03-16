@@ -18,12 +18,15 @@ import { XpService } from '../../services/xp.service';
         <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
           <span class="nav-icon">🏠</span> Dashboard
         </a>
-        <a routerLink="/finds" routerLinkActive="active">
-          <span class="nav-icon">🎒</span> My Finds
+        <a routerLink="/items" routerLinkActive="active">
+          <span class="nav-icon">🎒</span> Items
+        </a>
+        <a routerLink="/wiki" routerLinkActive="active">
+          <span class="nav-icon">📖</span> Wiki
         </a>
         @if (auth.isAdmin()) {
           <a routerLink="/add" routerLinkActive="active" class="btn-add">
-            <span class="nav-icon">⚔️</span> Log Find
+            <span class="nav-icon">⚔️</span> Log Item
           </a>
         }
       </div>
