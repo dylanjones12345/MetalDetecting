@@ -16,11 +16,13 @@ export class AuthService {
   private app: FirebaseApp | null = null;
   private auth: Auth | null = null;
   private provider = new GoogleAuthProvider();
+  private readonly firebaseReady = signal(false);
 
   private readonly userSignal = signal<User | null>(null);
   readonly user = this.userSignal.asReadonly();
-  readonly isLoggedIn = computed(() => !!this.userSignal());
+  readonly isLoggedIn = computed(() => !this.firebaseReady() || !!this.userSignal());
   readonly isAdmin = computed(() => {
+    if (!this.firebaseReady()) return true;
     const u = this.userSignal();
     return !!u && u.email === environment.adminEmail;
   });
@@ -35,12 +37,13 @@ export class AuthService {
   private initFirebase() {
     const cfg = environment.firebase;
     if (!cfg.apiKey || cfg.apiKey === 'YOUR_API_KEY') {
-      console.warn('Firebase not configured. Auth features disabled.');
+      this.firebaseReady.set(false);
       return;
     }
     try {
       this.app = initializeApp(cfg);
       this.auth = getAuth(this.app);
+      this.firebaseReady.set(true);
       this.isConfigured.set(true);
 
       onAuthStateChanged(this.auth, (user) => {
@@ -48,6 +51,7 @@ export class AuthService {
       });
     } catch (e) {
       console.error('Firebase init failed:', e);
+      this.firebaseReady.set(false);
     }
   }
 

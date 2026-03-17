@@ -8,5 +8,5 @@ export const environment = {
     messagingSenderId: 'YOUR_SENDER_ID',
     appId: 'YOUR_APP_ID',
   },
-  adminEmail: 'YOUR_GOOGLE_EMAIL@gmail.com',
+  adminEmail: 'dylansjones123@gmail.com',
 };
