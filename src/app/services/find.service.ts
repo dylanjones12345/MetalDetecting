@@ -107,6 +107,7 @@ export class ItemService {
     return this.itemsSignal().filter(
       (f) =>
         f.name.toLowerCase().includes(q) ||
+        (f.description ?? '').toLowerCase().includes(q) ||
         f.category.toLowerCase().includes(q) ||
         f.location.toLowerCase().includes(q) ||
         f.notes.toLowerCase().includes(q)

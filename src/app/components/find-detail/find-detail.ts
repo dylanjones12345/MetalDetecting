@@ -60,6 +60,10 @@ import {
             <!-- Article content -->
             <div class="article">
               <h1 class="article-title">{{ f.name }}</h1>
+              @if (f.description) {
+                <p class="article-desc">{{ f.description }}</p>
+              }
+
               <p class="article-lead">
                 <strong>{{ f.name }}</strong> is a <strong>{{ getCategory(f) }}</strong> item
                 found on {{ f.dateFound | date:'longDate' }}@if (f.location) { at {{ f.location }}}.
@@ -136,6 +140,7 @@ import {
       border-bottom: 2px solid #94866d;
       padding-bottom: 0.3rem; margin-bottom: 0.75rem;
     }
+    .article-desc { font-size: 0.95rem; color: #333; line-height: 1.6; margin-bottom: 0.75rem; }
     .article-lead { font-size: 0.95rem; color: #333; line-height: 1.6; margin-bottom: 1rem; }
     .xp-text { color: #2e5e05; }
     .article-h2 {

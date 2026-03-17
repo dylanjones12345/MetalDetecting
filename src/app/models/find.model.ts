@@ -1,6 +1,7 @@
 export interface DetectorItem {
   id: string;
   name: string;
+  description: string;
   category: ItemCategory;
   tone: ItemTone;
   dateFound: string;

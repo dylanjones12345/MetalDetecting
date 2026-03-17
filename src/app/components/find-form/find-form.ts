@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ItemService } from '../../services/find.service';
@@ -9,6 +9,7 @@ import {
   CONDITION_LABELS,
   TONE_LABELS,
   CATEGORY_XP,
+  CATEGORY_ICONS,
   ItemCategory,
 } from '../../models/find.model';
 
@@ -31,19 +32,22 @@ import {
           <p class="page-sub">{{ isEditing ? 'Update the details below.' : 'Record your latest discovery.' }}</p>
 
           <form (ngSubmit)="onSubmit()" class="item-form" #itemForm="ngForm">
+            <!-- Primary fields: name, description, category, tone, value -->
             <section class="form-section">
-              <h2 class="section-title">Basic Info</h2>
-              <div class="form-row">
-                <div class="form-group grow-2">
-                  <label for="name">Name / Description *</label>
-                  <input id="name" type="text" [(ngModel)]="model.name" name="name" required
-                    placeholder="e.g. 1942 Mercury Dime" />
-                </div>
-                <div class="form-group">
-                  <label for="dateFound">Date Found *</label>
-                  <input id="dateFound" type="date" [(ngModel)]="model.dateFound" name="dateFound" required />
-                </div>
+              <h2 class="section-title">Item Details</h2>
+
+              <div class="form-group">
+                <label for="name">Item Name *</label>
+                <input id="name" type="text" [(ngModel)]="model.name" name="name" required
+                  placeholder="e.g. 1942 Mercury Dime" />
               </div>
+
+              <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" [(ngModel)]="model.description" name="description" rows="3"
+                  placeholder="What is this item? Any details about it..."></textarea>
+              </div>
+
               <div class="form-row">
                 <div class="form-group">
                   <label for="category">Category *</label>
@@ -62,6 +66,61 @@ import {
                   </select>
                 </div>
                 <div class="form-group">
+                  <label for="estimatedValue">Value ($)</label>
+                  <input id="estimatedValue" type="number" [(ngModel)]="model.estimatedValue"
+                    name="estimatedValue" min="0" step="0.01" placeholder="0.00" />
+                </div>
+              </div>
+
+              @if (model.category) {
+                <div class="xp-preview">
+                  {{ getCategoryIcon(model.category) }} {{ getCategoryLabel(model.category) }}
+                  — <strong>+{{ getXpForCategory(model.category) }} XP</strong>
+                </div>
+              }
+            </section>
+
+            <!-- Image upload -->
+            <section class="form-section">
+              <h2 class="section-title">Item Picture</h2>
+
+              <div class="upload-area"
+                (click)="fileInput.click()"
+                (dragover)="onDragOver($event)"
+                (dragleave)="isDragging.set(false)"
+                (drop)="onDrop($event)"
+                [class.dragging]="isDragging()">
+
+                @if (imagePreview()) {
+                  <img [src]="imagePreview()" class="upload-preview" alt="Preview" />
+                  <button type="button" class="remove-img" (click)="removeImage($event)">Remove</button>
+                } @else {
+                  <div class="upload-placeholder">
+                    <span class="upload-icon">📷</span>
+                    <span class="upload-text">Click or drag a photo here</span>
+                    <span class="upload-hint">JPG, PNG, WebP — max 2 MB</span>
+                  </div>
+                }
+              </div>
+              <input #fileInput type="file" accept="image/*" style="display:none"
+                (change)="onFileSelected($event)" />
+
+              <div class="form-group" style="margin-top:0.5rem">
+                <label for="imageUrl">Or paste an image URL</label>
+                <input id="imageUrl" type="url" [(ngModel)]="model.imageUrl" name="imageUrl"
+                  placeholder="https://..." (ngModelChange)="onUrlChange()" />
+              </div>
+            </section>
+
+            <!-- Optional extra fields -->
+            <section class="form-section">
+              <h2 class="section-title">Additional Info <span class="opt-tag">(optional)</span></h2>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="dateFound">Date Found</label>
+                  <input id="dateFound" type="date" [(ngModel)]="model.dateFound" name="dateFound" />
+                </div>
+                <div class="form-group">
                   <label for="condition">Condition</label>
                   <select id="condition" [(ngModel)]="model.condition" name="condition">
                     @for (opt of conditionOptions; track opt.value) {
@@ -69,24 +128,19 @@ import {
                     }
                   </select>
                 </div>
-              </div>
-              @if (model.category) {
-                <div class="xp-preview">
-                  XP Reward: <strong>+{{ getXpForCategory(model.category) }}</strong>
+                <div class="form-group">
+                  <label for="location">Location</label>
+                  <input id="location" type="text" [(ngModel)]="model.location" name="location"
+                    placeholder="e.g. Beach near pier" />
                 </div>
-              }
-            </section>
-
-            <section class="form-section">
-              <h2 class="section-title">Measurements</h2>
+              </div>
               <div class="form-row">
                 <div class="form-group">
                   <label for="depth">Depth</label>
                   <div class="input-unit">
                     <input id="depth" type="number" [(ngModel)]="model.depth" name="depth" min="0" step="0.5" placeholder="0" />
                     <select [(ngModel)]="model.depthUnit" name="depthUnit" class="unit">
-                      <option value="in">in</option>
-                      <option value="cm">cm</option>
+                      <option value="in">in</option><option value="cm">cm</option>
                     </select>
                   </div>
                 </div>
@@ -95,31 +149,15 @@ import {
                   <div class="input-unit">
                     <input id="weight" type="number" [(ngModel)]="model.weight" name="weight" min="0" step="0.1" placeholder="0" />
                     <select [(ngModel)]="model.weightUnit" name="weightUnit" class="unit">
-                      <option value="g">g</option>
-                      <option value="oz">oz</option>
+                      <option value="g">g</option><option value="oz">oz</option>
                     </select>
                   </div>
                 </div>
-                <div class="form-group">
-                  <label for="estimatedValue">Est. Value ($)</label>
-                  <input id="estimatedValue" type="number" [(ngModel)]="model.estimatedValue" name="estimatedValue" min="0" step="0.01" placeholder="0.00" />
-                </div>
-              </div>
-            </section>
-
-            <section class="form-section">
-              <h2 class="section-title">Location & Notes</h2>
-              <div class="form-group">
-                <label for="location">Location</label>
-                <input id="location" type="text" [(ngModel)]="model.location" name="location" placeholder="e.g. Old farmstead on Route 7" />
-              </div>
-              <div class="form-group">
-                <label for="imageUrl">Image URL</label>
-                <input id="imageUrl" type="url" [(ngModel)]="model.imageUrl" name="imageUrl" placeholder="https://..." />
               </div>
               <div class="form-group">
                 <label for="notes">Notes</label>
-                <textarea id="notes" [(ngModel)]="model.notes" name="notes" rows="4" placeholder="Extra details..."></textarea>
+                <textarea id="notes" [(ngModel)]="model.notes" name="notes" rows="2"
+                  placeholder="Any extra notes..."></textarea>
               </div>
             </section>
 
@@ -157,10 +195,10 @@ import {
       border-bottom: 1px solid #b8a282;
       padding-bottom: 0.3rem; margin-bottom: 0.75rem;
     }
+    .opt-tag { font-weight: 400; font-size: 0.8rem; color: #94866d; }
 
     .form-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
     .form-group { flex: 1; min-width: 140px; margin-bottom: 0.65rem; display: flex; flex-direction: column; }
-    .grow-2 { flex: 2; min-width: 200px; }
 
     label {
       font-size: 0.8rem; font-weight: 600; color: #605443;
@@ -180,11 +218,52 @@ import {
 
     .xp-preview {
       display: inline-block;
-      padding: 0.35rem 0.65rem;
+      padding: 0.4rem 0.75rem;
       background: #1b1612; border: 1px solid #3e362f;
-      color: #b79d7e; font-size: 0.85rem;
+      color: #b79d7e; font-size: 0.9rem;
     }
     .xp-preview strong { color: #00ff00; }
+
+    /* Image upload area */
+    .upload-area {
+      border: 2px dashed #94866d;
+      background: #f5f0e0;
+      padding: 1.25rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+      position: relative;
+      min-height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+    .upload-area:hover, .upload-area.dragging {
+      border-color: #936039;
+      background: #efe8d4;
+    }
+    .upload-placeholder {
+      display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
+    }
+    .upload-icon { font-size: 2rem; }
+    .upload-text { font-size: 0.9rem; font-weight: 600; color: #605443; }
+    .upload-hint { font-size: 0.75rem; color: #94866d; }
+    .upload-preview {
+      max-width: 100%;
+      max-height: 300px;
+      object-fit: contain;
+      border: 1px solid #94866d;
+    }
+    .remove-img {
+      margin-top: 0.5rem;
+      font-family: var(--font-body); font-size: 0.8rem;
+      padding: 0.25rem 0.75rem;
+      background: linear-gradient(180deg, #c0392b, #922b21);
+      color: #fff; border: 1px solid #6b1a14;
+      cursor: pointer;
+    }
+    .remove-img:hover { filter: brightness(1.15); }
 
     .form-actions {
       display: flex; justify-content: flex-end; gap: 0.5rem;
@@ -204,9 +283,12 @@ export class FindFormComponent implements OnInit {
 
   isEditing = false;
   editId = '';
+  isDragging = signal(false);
+  imagePreview = signal<string>('');
 
   model: Omit<DetectorItem, 'id'> = {
     name: '',
+    description: '',
     category: 'coin',
     tone: 'mid',
     dateFound: new Date().toISOString().split('T')[0],
@@ -235,12 +317,68 @@ export class FindFormComponent implements OnInit {
         this.isEditing = true;
         this.editId = id;
         this.model = { ...existing };
+        if (existing.imageUrl) {
+          this.imagePreview.set(existing.imageUrl);
+        }
       }
     }
   }
 
   getXpForCategory(category: string): number {
     return CATEGORY_XP[category as ItemCategory] ?? 0;
+  }
+
+  getCategoryLabel(category: string): string {
+    return CATEGORY_LABELS[category as ItemCategory] ?? category;
+  }
+
+  getCategoryIcon(category: string): string {
+    return CATEGORY_ICONS[category as ItemCategory] ?? '❓';
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.[0]) this.processFile(input.files[0]);
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging.set(true);
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging.set(false);
+    const file = event.dataTransfer?.files?.[0];
+    if (file?.type.startsWith('image/')) this.processFile(file);
+  }
+
+  removeImage(event: Event) {
+    event.stopPropagation();
+    this.model.imageUrl = '';
+    this.imagePreview.set('');
+  }
+
+  onUrlChange() {
+    if (this.model.imageUrl && !this.model.imageUrl.startsWith('data:')) {
+      this.imagePreview.set(this.model.imageUrl);
+    }
+  }
+
+  private processFile(file: File) {
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Image must be under 2 MB');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      this.model.imageUrl = dataUrl;
+      this.imagePreview.set(dataUrl);
+    };
+    reader.readAsDataURL(file);
   }
 
   onSubmit() {
