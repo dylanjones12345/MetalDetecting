@@ -71,7 +71,7 @@ export const CATEGORY_ICONS: Record<ItemCategory, string> = {
 export const CATEGORY_XP: Record<ItemCategory, number> = {
   gold: 1500,
   silver: 800,
-  coin: 500,
+  coin: 100,
   fake_jewelry: 300,
   phone: 250,
   toys: 150,

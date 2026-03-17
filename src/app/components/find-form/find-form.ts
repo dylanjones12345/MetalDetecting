@@ -98,11 +98,14 @@ import {
                   <div class="upload-placeholder">
                     <span class="upload-icon">📷</span>
                     <span class="upload-text">Click or drag a photo here</span>
-                    <span class="upload-hint">JPG, PNG, WebP — max 2 MB</span>
+                    <span class="upload-hint">JPG, PNG, WebP, HEIC — max 5 MB</span>
                   </div>
                 }
               </div>
-              <input #fileInput type="file" accept="image/*" style="display:none"
+              @if (isConverting()) {
+                <div class="converting">Converting HEIC image...</div>
+              }
+              <input #fileInput type="file" accept="image/*,.heic,.heif" style="display:none"
                 (change)="onFileSelected($event)" />
 
               <div class="form-group" style="margin-top:0.5rem">
@@ -264,6 +267,10 @@ import {
       cursor: pointer;
     }
     .remove-img:hover { filter: brightness(1.15); }
+    .converting {
+      margin-top: 0.4rem;
+      font-size: 0.85rem; color: #936039; font-weight: 600;
+    }
 
     .form-actions {
       display: flex; justify-content: flex-end; gap: 0.5rem;
@@ -284,6 +291,7 @@ export class FindFormComponent implements OnInit {
   isEditing = false;
   editId = '';
   isDragging = signal(false);
+  isConverting = signal(false);
   imagePreview = signal<string>('');
 
   model: Omit<DetectorItem, 'id'> = {
@@ -367,18 +375,41 @@ export class FindFormComponent implements OnInit {
     }
   }
 
-  private processFile(file: File) {
-    if (file.size > 2 * 1024 * 1024) {
-      alert('Image must be under 2 MB');
+  private async processFile(file: File) {
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image must be under 5 MB');
       return;
     }
+
+    const isHeic = file.name.toLowerCase().endsWith('.heic') ||
+                   file.name.toLowerCase().endsWith('.heif') ||
+                   file.type === 'image/heic' ||
+                   file.type === 'image/heif';
+
+    let blob: Blob = file;
+
+    if (isHeic) {
+      try {
+        this.isConverting.set(true);
+        const { default: heic2any } = await import('heic2any');
+        const result = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.85 });
+        blob = Array.isArray(result) ? result[0] : result;
+      } catch (e) {
+        console.error('HEIC conversion failed:', e);
+        alert('Could not convert HEIC file. Try converting to JPG first.');
+        this.isConverting.set(false);
+        return;
+      }
+      this.isConverting.set(false);
+    }
+
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = reader.result as string;
       this.model.imageUrl = dataUrl;
       this.imagePreview.set(dataUrl);
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(blob);
   }
 
   onSubmit() {
